@@ -186,19 +186,63 @@ class _TaskScreenState extends State<TaskScreen> {
               itemBuilder: (context, index) {
                 final task = tasks[index];
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: ListTile(
-                    title: Text(task.title),
-                    subtitle: Text(
-                      "${task.startTime.hour.toString().padLeft(2, '0')}:${task.startTime.minute.toString().padLeft(2, '0')} - "
-                      "${task.endTime.hour.toString().padLeft(2, '0')}:${task.endTime.minute.toString().padLeft(2, '0')}\n"
-                      "${task.description}",
-                    ),
-                    isThreeLine: true,
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ЛЕВАЯ КОЛОНКА (ВРЕМЯ)
+                      Container(
+                        width: 80,
+                        child: Text(
+                          "${task.startTime.hour.toString().padLeft(2, '0')}:"
+                          "${task.startTime.minute.toString().padLeft(2, '0')}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+
+                      // ЛИНИЯ (визуальный таймлайн)
+                      Container(
+                        width: 2,
+                        height: 60,
+                        color: Colors.blue,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+
+                      // ПРАВАЯ ЧАСТЬ (ЗАДАЧА)
+                      Expanded(
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(task.description),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${task.startTime.hour.toString().padLeft(2, '0')}:${task.startTime.minute.toString().padLeft(2, '0')} - "
+                                  "${task.endTime.hour.toString().padLeft(2, '0')}:${task.endTime.minute.toString().padLeft(2, '0')}",
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
