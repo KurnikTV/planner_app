@@ -45,51 +45,131 @@ class TaskScreen extends StatefulWidget {
 class _TaskScreenState extends State<TaskScreen> {
   final List<Task> tasks = [];
 
-  void _addTask(String title, String description) {
+  void _addTask(
+    String title,
+    String description,
+    DateTime start,
+    DateTime end,
+  ) {
     setState(() {
-      tasks.add(Task(title: title, description: description));
+      tasks.add(Task(
+        title: title,
+        description: description,
+        startTime: start,
+        endTime: end,
+      ));
     });
   }
 
   void _openAddDialog() {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
+  final titleController = TextEditingController();
+  final descController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Новая задача"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: "Название"),
+  TimeOfDay? startTime;
+  TimeOfDay? endTime;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text("Новая задача"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: "Название"),
+                ),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(labelText: "Описание"),
+                ),
+                const SizedBox(height: 10),
+
+                // START TIME
+                ElevatedButton(
+                  onPressed: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      setStateDialog(() {
+                        startTime = picked;
+                      });
+                    }
+                  },
+                  child: Text(
+                    startTime == null
+                        ? "Выбрать время начала"
+                        : "Начало: ${startTime!.format(context)}",
+                  ),
+                ),
+
+                // END TIME
+                ElevatedButton(
+                  onPressed: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      setStateDialog(() {
+                        endTime = picked;
+                      });
+                    }
+                  },
+                  child: Text(
+                    endTime == null
+                        ? "Выбрать время окончания"
+                        : "Конец: ${endTime!.format(context)}",
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Отмена"),
               ),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: "Описание"),
+              ElevatedButton(
+                onPressed: () {
+                  if (startTime == null || endTime == null) return;
+
+                  final now = DateTime.now();
+
+                  _addTask(
+                    titleController.text,
+                    descController.text,
+                    DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                      startTime!.hour,
+                      startTime!.minute,
+                    ),
+                    DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                      endTime!.hour,
+                      endTime!.minute,
+                    ),
+                  );
+
+                  Navigator.pop(context);
+                },
+                child: const Text("Добавить"),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Отмена"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _addTask(titleController.text, descController.text);
-                Navigator.pop(context);
-              },
-              child: const Text("Добавить"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          );
+        },
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
