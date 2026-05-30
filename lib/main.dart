@@ -249,23 +249,44 @@ class _TaskScreenState extends State<TaskScreen> {
 
                   final now = DateTime.now();
 
+                  final start = DateTime(
+                    now.year,
+                    now.month,
+                    now.day,
+                    startTime!.hour,
+                    startTime!.minute,
+                  );
+
+                  final end = DateTime(
+                    now.year,
+                    now.month,
+                    now.day,
+                    endTime!.hour,
+                    endTime!.minute,
+                  );
+
+                  // 🚨 ВАЖНАЯ ПРОВЕРКА
+                  if (end.isBefore(start)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Время окончания не может быть раньше начала"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (end.isBefore(start)) {
+                    final temp = startTime;
+                    startTime = endTime;
+                    endTime = temp;
+                  }
+                  
                   _addTask(
                     titleController.text,
                     descController.text,
-                    DateTime(
-                      now.year,
-                      now.month,
-                      now.day,
-                      startTime!.hour,
-                      startTime!.minute,
-                    ),
-                    DateTime(
-                      now.year,
-                      now.month,
-                      now.day,
-                      endTime!.hour,
-                      endTime!.minute,
-                    ),
+                    start,
+                    end,
                   );
 
                   Navigator.pop(context);
