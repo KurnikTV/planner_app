@@ -303,12 +303,24 @@ class _TaskScreenState extends State<TaskScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: Text(
-                        "${day.day}.${day.month}",
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"][day.weekday - 1],
+                            style: TextStyle(
+                              color: isSelected ? Colors.white70 : Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            "${day.day}.${day.month}",
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
