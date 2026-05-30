@@ -68,6 +68,22 @@ class _TaskScreenState extends State<TaskScreen> {
   DateTime selectedDate = DateTime.now();
   DateTime startOfWeek = DateTime.now();
 
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Ошибка"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("ОК"),
+          ),
+        ],
+      ),
+    );
+  }
+
   String getWeekdayName(int weekday) {
     const days = [
       "Понедельник",
@@ -245,7 +261,10 @@ class _TaskScreenState extends State<TaskScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (startTime == null || endTime == null) return;
+                  if (startTime == null || endTime == null) {
+                    _showError("Выберите время начала и окончания");
+                    return;
+                  }
 
                   final now = DateTime.now();
 
@@ -265,23 +284,11 @@ class _TaskScreenState extends State<TaskScreen> {
                     endTime!.minute,
                   );
 
-                  // 🚨 ВАЖНАЯ ПРОВЕРКА
                   if (end.isBefore(start)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Время окончания не может быть раньше начала"),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    _showError("Время окончания не может быть раньше начала");
                     return;
                   }
 
-                  if (end.isBefore(start)) {
-                    final temp = startTime;
-                    startTime = endTime;
-                    endTime = temp;
-                  }
-                  
                   _addTask(
                     titleController.text,
                     descController.text,
