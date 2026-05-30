@@ -58,6 +58,8 @@ class _TaskScreenState extends State<TaskScreen> {
         startTime: start,
         endTime: end,
       ));
+
+      tasks.sort((a, b) => a.startTime.compareTo(b.startTime));
     });
   }
 
@@ -183,9 +185,21 @@ class _TaskScreenState extends State<TaskScreen> {
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 final task = tasks[index];
-                return ListTile(
-                  title: Text(task.title),
-                  subtitle: Text(task.description),
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: ListTile(
+                    title: Text(task.title),
+                    subtitle: Text(
+                      "${task.startTime.hour.toString().padLeft(2, '0')}:${task.startTime.minute.toString().padLeft(2, '0')} - "
+                      "${task.endTime.hour.toString().padLeft(2, '0')}:${task.endTime.minute.toString().padLeft(2, '0')}\n"
+                      "${task.description}",
+                    ),
+                    isThreeLine: true,
+                  ),
                 );
               },
             ),
