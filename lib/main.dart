@@ -66,13 +66,25 @@ class TaskScreen extends StatefulWidget {
 class _TaskScreenState extends State<TaskScreen> {
   final List<Task> tasks = [];
   DateTime selectedDate = DateTime.now();
+  DateTime startOfWeek = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    startOfWeek = getWeekStart(DateTime.now());
     _loadTasks();
   }
-  
+
+  DateTime getWeekStart(DateTime date) {
+    return date.subtract(Duration(days: date.weekday - 1));
+  }
+
+  List<DateTime> get weekDays {
+    return List.generate(7, (index) {
+      return startOfWeek.add(Duration(days: index));
+    });
+  }
+
   List<Task> get filteredTasks {
     return tasks.where((task) {
       return task.startTime.year == selectedDate.year &&
@@ -261,7 +273,52 @@ class _TaskScreenState extends State<TaskScreen> {
           ),
         ],
       ),
-      body: tasks.isEmpty
+
+      body: Column(
+        children: [
+          Container(
+            height: 70,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: weekDays.length,
+              itemBuilder: (context, index) {
+                final day = weekDays[index];
+
+                final isSelected =
+                    day.year == selectedDate.year &&
+                    day.month == selectedDate.month &&
+                    day.day == selectedDate.day;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedDate = day;
+                    });
+                  },
+                  child: Container(
+                    width: 80,
+                    margin: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.blue : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "${day.day}.${day.month}",
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Expanded(
+            child: tasks.isEmpty
           ? const Center(child: Text("Нет задач"))
           : ListView.builder(
               itemCount: filteredTasks.length,
@@ -351,6 +408,9 @@ class _TaskScreenState extends State<TaskScreen> {
                 );
               },
             ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddDialog,
         child: const Icon(Icons.add),
