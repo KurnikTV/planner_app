@@ -44,7 +44,16 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   final List<Task> tasks = [];
+  DateTime selectedDate = DateTime.now();
 
+    List<Task> get filteredTasks {
+      return tasks.where((task) {
+        return task.startTime.year == selectedDate.year &&
+            task.startTime.month == selectedDate.month &&
+            task.startTime.day == selectedDate.day;
+      }).toList();
+    }
+    
   void _addTask(
     String title,
     String description,
@@ -177,14 +186,36 @@ class _TaskScreenState extends State<TaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Планировщик дня"),
+        title: Text(
+          "${selectedDate.day.toString().padLeft(2, '0')}."
+          "${selectedDate.month.toString().padLeft(2, '0')}."
+          "${selectedDate.year}",
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () {
+              setState(() {
+                selectedDate = selectedDate.subtract(const Duration(days: 1));
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: () {
+              setState(() {
+                selectedDate = selectedDate.add(const Duration(days: 1));
+              });
+            },
+          ),
+        ],
       ),
       body: tasks.isEmpty
           ? const Center(child: Text("Нет задач"))
           : ListView.builder(
-              itemCount: tasks.length,
+              itemCount: filteredTasks.length,
               itemBuilder: (context, index) {
-                final task = tasks[index];
+                final task = filteredTasks[index];
 
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
