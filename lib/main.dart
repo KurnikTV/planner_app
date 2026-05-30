@@ -182,6 +182,8 @@ class _TaskScreenState extends State<TaskScreen> {
                   ),
                 ),
 
+                const SizedBox(height: 15),
+                
                 // END TIME
                 ElevatedButton(
                   onPressed: () async {
