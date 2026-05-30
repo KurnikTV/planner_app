@@ -183,7 +183,7 @@ class _TaskScreenState extends State<TaskScreen> {
                 ),
 
                 const SizedBox(height: 15),
-                
+
                 // END TIME
                 ElevatedButton(
                   onPressed: () async {
@@ -262,6 +262,7 @@ class _TaskScreenState extends State<TaskScreen> {
             onPressed: () {
               setState(() {
                 selectedDate = selectedDate.subtract(const Duration(days: 1));
+                startOfWeek = getWeekStart(selectedDate);
               });
             },
           ),
@@ -270,6 +271,7 @@ class _TaskScreenState extends State<TaskScreen> {
             onPressed: () {
               setState(() {
                 selectedDate = selectedDate.add(const Duration(days: 1));
+                startOfWeek = getWeekStart(selectedDate);
               });
             },
           ),
@@ -295,6 +297,7 @@ class _TaskScreenState extends State<TaskScreen> {
                   onTap: () {
                     setState(() {
                       selectedDate = day;
+                      startOfWeek = getWeekStart(day);
                     });
                   },
                   child: Container(
