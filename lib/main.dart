@@ -72,6 +72,28 @@ class _TaskScreenState extends State<TaskScreen> {
   DateTime startOfWeek = DateTime.now();
   final DeviceCalendarPlugin _calendarPlugin = DeviceCalendarPlugin();
 
+  Future<void> _initCalendar() async {
+    final permissionsGranted =
+        await _calendarPlugin.requestPermissions();
+
+    debugPrint("Permission result: $permissionsGranted");
+
+    if (permissionsGranted.isSuccess != true ||
+        permissionsGranted.data != true) {
+      _showError("Нет доступа к календарю");
+      return;
+    }
+
+    final calendarsResult = await _calendarPlugin.retrieveCalendars();
+
+    debugPrint("Calendars: ${calendarsResult.data}");
+
+    if (calendarsResult.data == null ||
+        calendarsResult.data!.isEmpty) {
+      _showError("Календарь не найден");
+    }
+  }
+
   void _deleteTask(Task task) {
     setState(() {
       tasks.remove(task);
@@ -118,37 +140,6 @@ class _TaskScreenState extends State<TaskScreen> {
       ],
     );
   }
-
-  // void _showDeleteDialog(int index) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (_) => AlertDialog(
-  //       title: const Text("Удалить задачу?"),
-  //       content: const Text("Это действие нельзя отменить"),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text("Отмена"),
-  //         ),
-  //         TextButton(
-  //           onPressed: () {
-  //             setState(() {
-  //               tasks.remove(filteredTasks[index]);
-  //             });
-
-  //             _saveTasks();
-
-  //             Navigator.pop(context);
-  //           },
-  //           child: const Text(
-  //             "Удалить",
-  //             style: TextStyle(color: Colors.red),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   void _showError(String message) {
     showDialog(
@@ -203,6 +194,7 @@ class _TaskScreenState extends State<TaskScreen> {
   void initState() {
     super.initState();
     startOfWeek = getWeekStart(DateTime.now());
+    _initCalendar();
     _loadTasks();
   }
 
@@ -224,15 +216,26 @@ class _TaskScreenState extends State<TaskScreen> {
     }).toList();
   }
 
+  Future<void> testCalendar() async {
+    final res = await _calendarPlugin.retrieveCalendars();
+    debugPrint("CALENDARS = ${res.data}");
+  }
+
   Future<void> _addToCalendar(Task task) async {
     final calendarsResult = await _calendarPlugin.retrieveCalendars();
+    debugPrint("Calendars: ${calendarsResult.data}");
 
     if (calendarsResult.data == null || calendarsResult.data!.isEmpty) {
       _showError("Календарь не найден");
       return;
     }
 
-    final calendar = calendarsResult.data!.first;
+    final calendars = await _calendarPlugin.retrieveCalendars();
+
+    final calendar = calendars.data!.firstWhere(
+      (c) => c.isDefault == true,
+      orElse: () => calendars.data!.first,
+    );
 
     final event = Event(
       calendar.id,
