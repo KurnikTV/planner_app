@@ -68,6 +68,19 @@ class _TaskScreenState extends State<TaskScreen> {
   DateTime selectedDate = DateTime.now();
   DateTime startOfWeek = DateTime.now();
 
+  void _showAboutDialog() {
+    showAboutDialog(
+      context: context,
+      applicationName: "Planner App",
+      applicationVersion: "1.0.0",
+      applicationLegalese: "Автор: KurnikTV",
+      children: [
+        const SizedBox(height: 10),
+        const Text("Самое обычное приложение для планирования задач"),
+      ],
+    );
+  }
+
   void _showDeleteDialog(int index) {
     showDialog(
       context: context,
@@ -381,6 +394,19 @@ class _TaskScreenState extends State<TaskScreen> {
                 startOfWeek = getWeekStart(selectedDate);
               });
             },
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'about') {
+                _showAboutDialog();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'about',
+                child: Text('О приложении'),
+              ),
+            ],
           ),
         ],
       ),
