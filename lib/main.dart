@@ -68,6 +68,39 @@ class _TaskScreenState extends State<TaskScreen> {
   DateTime selectedDate = DateTime.now();
   DateTime startOfWeek = DateTime.now();
 
+  String getWeekdayName(int weekday) {
+    const days = [
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота",
+      "Воскресенье",
+    ];
+
+    return days[weekday - 1];
+  }
+
+  String getMonthName(int month) {
+    const months = [
+      "января",
+      "февраля",
+      "марта",
+      "апреля",
+      "мая",
+      "июня",
+      "июля",
+      "августа",
+      "сентября",
+      "октября",
+      "ноября",
+      "декабря",
+    ];
+
+    return months[month - 1];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -247,14 +280,29 @@ class _TaskScreenState extends State<TaskScreen> {
   );
 }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "${selectedDate.day.toString().padLeft(2, '0')}."
-          "${selectedDate.month.toString().padLeft(2, '0')}."
-          "${selectedDate.year}",
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "${selectedDate.day} ${getMonthName(selectedDate.month)} ${selectedDate.year}",
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              getWeekdayName(selectedDate.weekday),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
