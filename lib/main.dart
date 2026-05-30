@@ -314,7 +314,7 @@ class _TaskScreenState extends State<TaskScreen> {
                             ),
                           ),
                           Text(
-                            "${day.day}.${day.month}",
+                            "${day.day.toString().padLeft(2, '0')}.${day.month.toString().padLeft(2, '0')}",
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.black,
                               fontWeight: FontWeight.bold,
