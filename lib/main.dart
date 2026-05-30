@@ -53,7 +53,7 @@ class _TaskScreenState extends State<TaskScreen> {
             task.startTime.day == selectedDate.day;
       }).toList();
     }
-    
+
   void _addTask(
     String title,
     String description,
@@ -216,7 +216,8 @@ class _TaskScreenState extends State<TaskScreen> {
               itemCount: filteredTasks.length,
               itemBuilder: (context, index) {
                 final task = filteredTasks[index];
-
+                final duration = task.endTime.difference(task.startTime).inMinutes;
+                
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Row(
@@ -245,7 +246,21 @@ class _TaskScreenState extends State<TaskScreen> {
 
                       // ПРАВАЯ ЧАСТЬ (ЗАДАЧА)
                       Expanded(
-                        child: Card(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: task.endTime
+                                          .difference(task.startTime)
+                                          .inMinutes >
+                                      60
+                                  ? Colors.red
+                                  : Colors.blue,
+                              width: 2,
+                            ),
+                          ),
+                          child: Card(
+                            elevation: 0,
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: Column(
@@ -259,16 +274,23 @@ class _TaskScreenState extends State<TaskScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(task.description),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "${task.startTime.hour.toString().padLeft(2, '0')}:${task.startTime.minute.toString().padLeft(2, '0')} - "
-                                  "${task.endTime.hour.toString().padLeft(2, '0')}:${task.endTime.minute.toString().padLeft(2, '0')}",
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
+                                Text(task.description.isEmpty ? "Без описания" : task.description,
                                 ),
-                              ],
+                                const SizedBox(height: 6),
+
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "${task.startTime.hour.toString().padLeft(2, '0')}:${task.startTime.minute.toString().padLeft(2, '0')} - "
+                                      "${task.endTime.hour.toString().padLeft(2, '0')}:${task.endTime.minute.toString().padLeft(2, '0')}",
+                                      style: const TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
