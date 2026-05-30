@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   runApp(const PlannerApp());
@@ -33,6 +36,24 @@ class Task {
     required this.startTime,
     required this.endTime,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime.toIso8601String(),
+    };
+  }
+
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      title: json['title'],
+      description: json['description'],
+      startTime: DateTime.parse(json['startTime']),
+      endTime: DateTime.parse(json['endTime']),
+    );
+  }
 }
 
 class TaskScreen extends StatefulWidget {
@@ -46,13 +67,42 @@ class _TaskScreenState extends State<TaskScreen> {
   final List<Task> tasks = [];
   DateTime selectedDate = DateTime.now();
 
-    List<Task> get filteredTasks {
-      return tasks.where((task) {
-        return task.startTime.year == selectedDate.year &&
-            task.startTime.month == selectedDate.month &&
-            task.startTime.day == selectedDate.day;
-      }).toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+  
+  List<Task> get filteredTasks {
+    return tasks.where((task) {
+      return task.startTime.year == selectedDate.year &&
+          task.startTime.month == selectedDate.month &&
+          task.startTime.day == selectedDate.day;
+    }).toList();
+  }
+
+  Future<void> _saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final data = tasks.map((t) => t.toJson()).toList();
+
+    prefs.setString('tasks', jsonEncode(data));
+  }
+
+  Future<void> _loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final String? data = prefs.getString('tasks');
+
+    if (data != null) {
+      final List decoded = jsonDecode(data);
+
+      setState(() {
+        tasks.clear();
+        tasks.addAll(decoded.map((e) => Task.fromJson(e)).toList());
+      });
     }
+  }
 
   void _addTask(
     String title,
@@ -70,6 +120,7 @@ class _TaskScreenState extends State<TaskScreen> {
 
       tasks.sort((a, b) => a.startTime.compareTo(b.startTime));
     });
+    _saveTasks();
   }
 
   void _openAddDialog() {
@@ -224,7 +275,7 @@ class _TaskScreenState extends State<TaskScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ЛЕВАЯ КОЛОНКА (ВРЕМЯ)
-                      Container(
+                      SizedBox(
                         width: 80,
                         child: Text(
                           "${task.startTime.hour.toString().padLeft(2, '0')}:"
