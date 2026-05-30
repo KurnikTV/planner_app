@@ -68,6 +68,37 @@ class _TaskScreenState extends State<TaskScreen> {
   DateTime selectedDate = DateTime.now();
   DateTime startOfWeek = DateTime.now();
 
+  void _showDeleteDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Удалить задачу?"),
+        content: const Text("Это действие нельзя отменить"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Отмена"),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                tasks.remove(filteredTasks[index]);
+              });
+
+              _saveTasks();
+
+              Navigator.pop(context);
+            },
+            child: const Text(
+              "Удалить",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showError(String message) {
     showDialog(
       context: context,
@@ -419,7 +450,11 @@ class _TaskScreenState extends State<TaskScreen> {
                 final task = filteredTasks[index];
                 final duration = task.endTime.difference(task.startTime).inMinutes;
                 
-                return Container(
+                return GestureDetector(
+                onLongPress: () {
+                  _showDeleteDialog(index);
+                },
+                child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,6 +533,7 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ],
                   ),
+                ),
                 );
               },
             ),
