@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:device_calendar/device_calendar.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tzdata;
 
 void main() {
+  tzdata.initializeTimeZones();
   runApp(const PlannerApp());
 }
 
@@ -67,6 +70,41 @@ class _TaskScreenState extends State<TaskScreen> {
   final List<Task> tasks = [];
   DateTime selectedDate = DateTime.now();
   DateTime startOfWeek = DateTime.now();
+  final DeviceCalendarPlugin _calendarPlugin = DeviceCalendarPlugin();
+
+  void _deleteTask(Task task) {
+    setState(() {
+      tasks.remove(task);
+    });
+
+    _saveTasks();
+  }
+
+  void _showDeleteDialog(Task task) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Удалить задачу?"),
+        content: Text(task.title),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Отмена"),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteTask(task);
+              Navigator.pop(context);
+            },
+            child: const Text(
+              "Удалить",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showAboutDialog() {
     showAboutDialog(
@@ -81,36 +119,36 @@ class _TaskScreenState extends State<TaskScreen> {
     );
   }
 
-  void _showDeleteDialog(int index) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Удалить задачу?"),
-        content: const Text("Это действие нельзя отменить"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Отмена"),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                tasks.remove(filteredTasks[index]);
-              });
+  // void _showDeleteDialog(int index) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: const Text("Удалить задачу?"),
+  //       content: const Text("Это действие нельзя отменить"),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("Отмена"),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             setState(() {
+  //               tasks.remove(filteredTasks[index]);
+  //             });
 
-              _saveTasks();
+  //             _saveTasks();
 
-              Navigator.pop(context);
-            },
-            child: const Text(
-              "Удалить",
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //             Navigator.pop(context);
+  //           },
+  //           child: const Text(
+  //             "Удалить",
+  //             style: TextStyle(color: Colors.red),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   void _showError(String message) {
     showDialog(
@@ -186,6 +224,27 @@ class _TaskScreenState extends State<TaskScreen> {
     }).toList();
   }
 
+  Future<void> _addToCalendar(Task task) async {
+    final calendarsResult = await _calendarPlugin.retrieveCalendars();
+
+    if (calendarsResult.data == null || calendarsResult.data!.isEmpty) {
+      _showError("Календарь не найден");
+      return;
+    }
+
+    final calendar = calendarsResult.data!.first;
+
+    final event = Event(
+      calendar.id,
+      title: task.title,
+      description: task.description,
+      start: tz.TZDateTime.from(task.startTime, tz.local),
+      end: tz.TZDateTime.from(task.endTime, tz.local),
+    );
+
+    await _calendarPlugin.createOrUpdateEvent(event);
+  }
+
   Future<void> _saveTasks() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -209,23 +268,21 @@ class _TaskScreenState extends State<TaskScreen> {
     }
   }
 
-  void _addTask(
-    String title,
-    String description,
-    DateTime start,
-    DateTime end,
-  ) {
-    setState(() {
-      tasks.add(Task(
-        title: title,
-        description: description,
-        startTime: start,
-        endTime: end,
-      ));
+  void _addTask(String title, String description, DateTime start, DateTime end) {
+    final task = Task(
+      title: title,
+      description: description,
+      startTime: start,
+      endTime: end,
+    );
 
+    setState(() {
+      tasks.add(task);
       tasks.sort((a, b) => a.startTime.compareTo(b.startTime));
     });
+
     _saveTasks();
+    _addToCalendar(task);
   }
 
   void _openAddDialog() {
@@ -478,7 +535,7 @@ class _TaskScreenState extends State<TaskScreen> {
                 
                 return GestureDetector(
                 onLongPress: () {
-                  _showDeleteDialog(index);
+                  _showDeleteDialog(task);
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
