@@ -24,8 +24,15 @@ class PlannerApp extends StatelessWidget {
 class Task {
   final String title;
   final String description;
+  final DateTime startTime;
+  final DateTime endTime;
 
-  Task({required this.title, required this.description});
+  Task({
+    required this.title,
+    required this.description,
+    required this.startTime,
+    required this.endTime,
+  });
 }
 
 class TaskScreen extends StatefulWidget {
